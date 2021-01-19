@@ -10,12 +10,18 @@ mirai {
     coreVersion = "2.0-RC" // mirai-core version
 }
 
-group = "org.example"
-version = "0.1.0"
+group = "com.github.juzeon.qgeb"
+version = "1.0"
 
 repositories {
     mavenLocal()
     mavenCentral()
     jcenter()
     maven("https://dl.bintray.com/kotlin/kotlin-eap")
+}
+dependencies {
+    implementation("com.google.code.gson:gson:+")
+    implementation("com.github.kittinunf.fuel:fuel:+")
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("org.jsoup:jsoup:1.13.1")
 }
