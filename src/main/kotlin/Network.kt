@@ -11,7 +11,7 @@ import java.time.Duration
 object Network {
     val okhttp = OkHttpClient.Builder()
         .addInterceptor(OkInterceptor())
-        .connectTimeout(Duration.ofSeconds(30)).build()
+        .connectTimeout(Duration.ofSeconds(15)).build()
     val fuel = FuelManager().apply {
         timeoutInMillisecond = 30 * 1000
         baseHeaders = mapOf(
