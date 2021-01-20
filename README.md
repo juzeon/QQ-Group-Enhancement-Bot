@@ -1,2 +1,3 @@
-# mirai-console-plugin-template
+# QQ-Group-Enhancement-Bot
+
 Template for Mirai Console plugins

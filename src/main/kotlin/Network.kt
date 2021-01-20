@@ -6,6 +6,7 @@ import com.github.kittinunf.fuel.core.Headers
 import okhttp3.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import java.io.InputStream
 import java.time.Duration
 
 object Network {
@@ -40,10 +41,15 @@ object Network {
         }
         return ""
     }
-    fun getResponseByteFromUrl(url:String){
-        kotlin.runCatching {
-
-        }
+    fun getResponseStreamFromUrl(url:String):InputStream?{
+        val resp=kotlin.runCatching {
+            okhttp.newCall(
+                Request.Builder().url(url).get().build()
+            ).execute()
+        }.onFailure {
+            return null
+        }.getOrNull()
+        return resp?.body?.byteStream()
     }
     fun getResponseStringFromUrl(url:String):String?{
         kotlin.runCatching {
@@ -57,22 +63,44 @@ object Network {
         }
         return null
     }
-    fun getPageMeta(url:String):PageMeta?{
-        val html=getResponseStringFromUrl(url)
-        val pageMeta: PageMeta?=html?.let {
-            val doc=Jsoup.parse(it)
-            val imgUrl=doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]")
-                .firstOrNull()
-                ?.attr("src")
-            val title=doc.select("title")
-                .firstOrNull()
-                ?.text()
-            val description=doc.select("meta[name=description]")
-                .firstOrNull()
-                ?.attr("content")
-            PageMeta(title,description,imgUrl)
+    fun getPreview(url:String):Preview?{
+        val resp=kotlin.runCatching {
+            okhttp.newCall(
+                Request.Builder().url(url).get().build()
+            ).execute()
+        }.onFailure {
+            return null
+        }.getOrNull()
+        val contentType=resp?.headers?.get("Content-Type")
+        when(contentType){
+            "image/jpeg","image/gif","image/png" -> {
+                val image: Preview.ImageData?= resp.body?.byteStream()?.let {
+                    Preview.ImageData(it)
+                }
+                return image
+            }
+            else -> {
+                if(contentType?.startsWith("text/html")?:false){
+                    val html=resp?.body?.string()
+                    val pageMeta: Preview.PageMeta?=html?.let {
+                        val doc=Jsoup.parse(it)
+                        val imgUrl=doc.select("img[src]")
+                            .firstOrNull()
+                            ?.attr("abs:src")
+                        val title=doc.select("title")
+                            .firstOrNull()
+                            ?.text()
+                        val description=doc.select("meta[name=description]")
+                            .firstOrNull()
+                            ?.attr("content")
+                        Preview.PageMeta(title,description,imgUrl)
+                    }
+                    return pageMeta
+                }else{
+                    return null
+                }
+            }
         }
-        return pageMeta
     }
 }
 
