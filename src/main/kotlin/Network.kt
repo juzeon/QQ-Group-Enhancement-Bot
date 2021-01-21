@@ -3,7 +3,14 @@ package com.github.juzeon.qgeb
 import com.github.kittinunf.fuel.core.Body
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
+import com.github.kittinunf.fuel.core.HttpException
+import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonIOException
+import com.google.gson.JsonObject
+import com.google.gson.reflect.TypeToken
 import okhttp3.*
+import okio.IOException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.InputStream
@@ -56,12 +63,21 @@ object Network {
             okhttp.newCall(
                 Request.Builder().url(url).get().build()
             ).execute()
-        }.onSuccess {
-            return it.body!!.string()
+        }.onSuccess { response ->
+            return response.body?.let {
+                it.string()
+            }
         }.onFailure {
             return null
         }
         return null
+    }
+    @Throws(Exception::class)
+    fun getMobileAcgList(count:Int):List<MobileAcgObj>{
+        val jsonStr=getResponseStringFromUrl("https://api.skyju.cc/mobile-acg/api.php"
+                +"?method=json&count=$count") ?: throw IOException("API返回为空")
+        val jsonObj=gson.fromJson<JsonObject>(jsonStr)
+        return gson.fromJson<List<MobileAcgObj>>(jsonObj.getAsJsonArray("data"))
     }
     fun getPreview(url:String):Preview?{
         val resp=kotlin.runCatching {

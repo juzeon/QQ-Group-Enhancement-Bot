@@ -14,14 +14,10 @@ object MessageEventHandler {
         handleWebsitePreview(messageEvent)
     }
     suspend fun handleWebsitePreview(messageEvent: MessageEvent){
-        val url=Regex("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)")
+        val url= Regex("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)")
             .find(messageEvent.message.contentToString())
-            ?.value
-        if(url==null){
-            return
-        }
-        val preview=Network.getPreview(url)
-        when(preview){
+            ?.value ?: return
+        when(val preview=Network.getPreview(url)){
             is Preview.PageMeta -> {
                 val (title,description,imageUrl)=preview
                 val messageChainBuilder=MessageChainBuilder()
