@@ -102,7 +102,16 @@ object Network {
                         val doc=Jsoup.parse(it)
                         val imgUrl=doc.select("img[src]")
                             .firstOrNull()
-                            ?.attr("abs:src")
+                            ?.attr("src").let {
+                                val realUrl:String?;
+                                if(it?.startsWith("http://")?:false
+                                    || it?.startsWith("https://")?:false){
+                                    realUrl=it
+                                }else{
+                                    realUrl=url+"/"+it
+                                }
+                                realUrl
+                            }
                         val title=doc.select("title")
                             .firstOrNull()
                             ?.text()

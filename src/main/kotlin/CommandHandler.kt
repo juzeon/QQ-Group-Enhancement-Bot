@@ -47,9 +47,7 @@ object CommandHandler : CompositeCommand(
         val messageChainBuilder = MessageChainBuilder()
         mobileAcgList.forEach {
             val job = launch {
-                val stream = Network.getResponseStreamFromUrl(
-                    if (Config.girlGetViaProxy) it.proxyUrl else it.rawUrl
-                ) ?: return@launch
+                val stream = Network.getResponseStreamFromUrl(it.url) ?: return@launch
                 val image = this@girl.subject?.uploadImage(stream.toExternalResource()) ?: return@launch
                 messageChainBuilder.append(image)
             }

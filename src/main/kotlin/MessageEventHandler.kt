@@ -1,6 +1,8 @@
 package com.github.juzeon.qgeb
 
+import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChainBuilder
@@ -14,6 +16,7 @@ object MessageEventHandler {
         handleWebsitePreview(messageEvent)
     }
     suspend fun handleWebsitePreview(messageEvent: MessageEvent){
+        if(!Config.preview || !CoolDown.isCooledDown("preview")) return
         val url= Regex("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)")
             .find(messageEvent.message.contentToString())
             ?.value ?: return
@@ -22,26 +25,32 @@ object MessageEventHandler {
                 val (title,description,imageUrl)=preview
                 val messageChainBuilder=MessageChainBuilder()
                 messageChainBuilder.append("[网址] ${url}\n\n[标题] ${title}\n\n[简介] ${description}")
-                val imageStream=imageUrl?.let {
-                    Network.getResponseStreamFromUrl(it)
-                }
-                imageStream?.run {
-                    val imageMessage=messageEvent.subject.uploadImage(toExternalResource())
-                    imageMessage?.let {
-                        messageChainBuilder.append("\n\n[图片] ")
-                        messageChainBuilder.append(it)
+                kotlin.runCatching {
+                    val imageStream = imageUrl?.let {
+                        Network.getResponseStreamFromUrl(it)
                     }
+                    imageStream?.run {
+                        val imageMessage = messageEvent.subject.uploadImage(toExternalResource())
+                        messageChainBuilder.append("\n\n[图片] ")
+                        messageChainBuilder.append(imageMessage)
+                    }
+                }.onFailure {
+                    Main.logger.info("上传Preview图片失败")
                 }
                 messageEvent.subject.sendMessage(messageChainBuilder.build())
             }
             is Preview.ImageData -> {
-                val imageMessage=messageEvent.subject.uploadImage(preview.dataStream.toExternalResource())
-                messageEvent.subject.sendMessage(imageMessage+"\n$url")
+                kotlin.runCatching {
+                    val imageMessage=messageEvent.subject.uploadImage(preview.dataStream.toExternalResource())
+                    messageEvent.subject.sendMessage(imageMessage+"\n$url")
+                }.onFailure {
+                    Main.logger.info("上传Preview图片失败")
+                }
             }
             else -> {
-                // do nothing
-//                messageEvent.subject.sendMessage("网页预览获取失败")
+                return
             }
         }
+        CoolDown.startCoolDown("preview",Config.previewCoolDownSeconds)
     }
 }

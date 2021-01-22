@@ -38,9 +38,6 @@ data class MobileAcgObj(
     @SerializedName("id")
     val id: Int,
 
-    @SerializedName("raw_url")
-    val rawUrl: String,
-
-    @SerializedName("proxy_url")
-    val proxyUrl: String
+    @SerializedName("url")
+    val url: String,
 )

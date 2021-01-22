@@ -8,6 +8,7 @@ import net.mamoe.mirai.utils.info
 object CoolDown {
     val coolDownList = mutableMapOf<String, Int>()
     fun startCoolDown(key: String, seconds: Int) {
+        if(seconds==0) return
         coolDownList[key] = seconds
         GlobalScope.launch {
             while (true) {
