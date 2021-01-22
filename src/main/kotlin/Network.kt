@@ -108,7 +108,7 @@ object Network {
                                 }
                                 realUrl
                             }.also {
-                                Main.logger.info(it)
+                                //Main.logger.info(it)
                             }
                         val title=doc.select("title")
                             .firstOrNull()
