@@ -21,7 +21,6 @@ repositories {
 }
 dependencies {
     implementation("com.google.code.gson:gson:+")
-    implementation("com.github.kittinunf.fuel:fuel:+")
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("org.jsoup:jsoup:1.13.1")
 }

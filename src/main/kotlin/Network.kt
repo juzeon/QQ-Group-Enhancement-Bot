@@ -1,9 +1,5 @@
 package com.github.juzeon.qgeb
 
-import com.github.kittinunf.fuel.core.Body
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.Headers
-import com.github.kittinunf.fuel.core.HttpException
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonIOException
@@ -20,12 +16,6 @@ object Network {
     val okhttp = OkHttpClient.Builder()
         .addInterceptor(OkInterceptor())
         .connectTimeout(Duration.ofSeconds(15)).build()
-    val fuel = FuelManager().apply {
-        timeoutInMillisecond = 30 * 1000
-        baseHeaders = mapOf(
-            Headers.USER_AGENT to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0"
-        )
-    }
 
     fun getTinyUrl(longUrl: String) :String{
         kotlin.runCatching {
@@ -98,19 +88,27 @@ object Network {
             else -> {
                 if(contentType?.startsWith("text/html")?:false){
                     val html=resp?.body?.string()
-                    val pageMeta: Preview.PageMeta?=html?.let {
-                        val doc=Jsoup.parse(it)
+                    val pageMeta: Preview.PageMeta?=html?.let { docContent->
+                        val doc=Jsoup.parse(docContent)
                         val imgUrl=doc.select("img[src]")
                             .firstOrNull()
                             ?.attr("src").let {
-                                val realUrl:String?;
-                                if(it?.startsWith("http://")?:false
-                                    || it?.startsWith("https://")?:false){
-                                    realUrl=it
-                                }else{
-                                    realUrl=url+"/"+it
+                                var realUrl:String?=null
+                                if(it!=null) {
+                                    if (it.startsWith("http://") || it.startsWith("https://")) {
+                                        realUrl = it
+                                    } else {
+                                        val baseUri = Regex("https?://[^/]*").find(url)!!.value
+                                        if (it.startsWith("/")) {
+                                            realUrl = baseUri + it
+                                        } else {
+                                            realUrl = baseUri + "/" + it
+                                        }
+                                    }
                                 }
                                 realUrl
+                            }.also {
+                                Main.logger.info(it)
                             }
                         val title=doc.select("title")
                             .firstOrNull()

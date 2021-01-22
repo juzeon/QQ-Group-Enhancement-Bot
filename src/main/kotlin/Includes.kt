@@ -15,7 +15,7 @@ val helpText = """
     |/e - 显示本帮助
     |/e tinyurl <url> - 使用 tinyurl.com 缩短网址
     |   eg. /e tinyurl https://github.com/juzeon/QQ-Group-Enhancement-Bot
-    |/e girl <count> - 获取二次元图片，count不填默认为1，最大为12
+    |/e girl <count> - 获取二次元图片，count不填默认为1
     |   eg. /e girl 6
 """.trimMargin()
 

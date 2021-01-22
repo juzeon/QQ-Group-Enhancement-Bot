@@ -20,10 +20,9 @@ object CommandHandler : CompositeCommand(
         if (!checkEnable(this, Config.tinyurl)
             || !checkCoolDown(this, "tinyurl")
         ) return
+        CoolDown.startCoolDown("tinyurl",Config.tinyurlCoolDownSeconds)
         val receipt = sendMessage("正在调取API，请稍后...")
-        sendMessage(Network.getTinyUrl(longUrl))?.run {
-            CoolDown.startCoolDown("tinyurl",Config.tinyurlCoolDownSeconds)
-        }
+        sendMessage(Network.getTinyUrl(longUrl))
         receipt?.recall()
     }
 
@@ -33,6 +32,8 @@ object CommandHandler : CompositeCommand(
         if (!checkEnable(this, Config.girl)
             || !checkCoolDown(this, "girl")
         ) return
+        CoolDown.startCoolDown("girl", Config.girlCoolDownSeconds)
+        val receipt = sendMessage("正在调取API，请稍后...")
         var count = countPassed
         if (count > Config.girlCountMax) {
             count = Config.girlCountMax
@@ -56,9 +57,8 @@ object CommandHandler : CompositeCommand(
         jobList.forEach {
             it.join()
         }
-        sendMessage(messageChainBuilder.build())?.run {
-            CoolDown.startCoolDown("girl", Config.girlCoolDownSeconds)
-        }
+        sendMessage(messageChainBuilder.build())
+        receipt?.recall()
     }
 
     @SubCommand

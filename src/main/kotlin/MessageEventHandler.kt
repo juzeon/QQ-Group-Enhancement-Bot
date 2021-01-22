@@ -17,6 +17,7 @@ object MessageEventHandler {
     }
     suspend fun handleWebsitePreview(messageEvent: MessageEvent){
         if(!Config.preview || !CoolDown.isCooledDown("preview")) return
+        CoolDown.startCoolDown("preview",Config.previewCoolDownSeconds)
         val url= Regex("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)")
             .find(messageEvent.message.contentToString())
             ?.value ?: return
@@ -24,7 +25,7 @@ object MessageEventHandler {
             is Preview.PageMeta -> {
                 val (title,description,imageUrl)=preview
                 val messageChainBuilder=MessageChainBuilder()
-                messageChainBuilder.append("[网址] ${url}\n\n[标题] ${title}\n\n[简介] ${description}")
+                messageChainBuilder.append("[快览] https://outline.com/${url}\n\n[标题] ${title}\n\n[简介] ${description}")
                 kotlin.runCatching {
                     val imageStream = imageUrl?.let {
                         Network.getResponseStreamFromUrl(it)
@@ -51,6 +52,5 @@ object MessageEventHandler {
                 return
             }
         }
-        CoolDown.startCoolDown("preview",Config.previewCoolDownSeconds)
     }
 }
